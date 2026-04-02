@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  front:
+    image: nginx:latest
+    ports:
+      -80:80
+    volumes:
+      - ../front:/usr/share/nginx/html
+    networks:
+      - front
+    depends_on:
+      - back
+
+  back:
+    environment:
+      - DATABASE_URL=Postgresesql://app:secret@mydb:5432/myapp
+      - PORT=3001
+    networks:
+      - front
+      - back
+    depends_on:
+      - mydb
+  mydb:
+    image: postgrse:15-alpine
+    enviroment:
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=myapp
+    volumes:
+      - mydb-data:/var/lib/postgresql/data
+      - ./back/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+
+networks:
+  front:
+  back:
+  mydb:
+
+volumes:
+  mydb-data:
